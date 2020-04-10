@@ -1,0 +1,33 @@
+name: "Update version"
+on:
+  push:
+    branches:
+    - master
+    - version-update
+    # paths:
+    # - ".github/workflows/packages-*.yaml"
+  # pull_request:
+  #   paths:
+  #   - "packages/**"
+  #   - ".github/workflows/packages-*.yaml"
+jobs:
+  update-version:
+    env:
+      YB_VERSION: "2.1.2.0"
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: "Check the files from current directory"
+      run: "ls -lla"
+    - name: "Update the version to a newer version"
+      run: |
+        .ci/update_formula_version.sh "${YB_VERSION}"
+    - name: "Run git commands"
+      run: |
+        git status
+        git diff
+        # git add -u
+        # git config user.name 'Bhavin Gandhi'
+        # git config user.email 'bhavin192@users.noreply.github.com'
+        # git commit -m "Update version to ${YB_VERSION}"
+        # git push origin ${{ github.ref }}:bot-branch
