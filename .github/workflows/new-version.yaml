@@ -28,6 +28,13 @@ jobs:
         grep "Yugabytedb" Formula/yugabytedb.rb
         grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
         grep "Yugabytedb" Formula/yugabytedb@2.0.rb
+    - name: "Push 2.1.1.0"
+      run: |
+        git add ${git_modified_files}
+        git config user.name 'YugaByte CI'
+        git config user.email 'yugabyte-ci@users.noreply.github.com'
+        git commit -m "Update version to 2.1.1.0"
+        git push -f origin ${{ github.ref }}:bot-branch
     - name: "Update the version to 2.0.11.0"
       run: |
         .ci/update_formula_version.sh '2.0.11.0'
@@ -37,6 +44,13 @@ jobs:
         grep "Yugabytedb" Formula/yugabytedb.rb
         grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
         grep "Yugabytedb" Formula/yugabytedb@2.0.rb
+    - name: "Push 2.0.11.0"
+      run: |
+        git add ${git_modified_files}
+        git config user.name 'YugaByte CI'
+        git config user.email 'yugabyte-ci@users.noreply.github.com'
+        git commit -m "Update version to 2.0.11.0"
+        git push -f origin ${{ github.ref }}:bot-branch
     - name: "Update the version to 2.1.2.0"
       run: |
         .ci/update_formula_version.sh '2.1.2.0'
@@ -46,6 +60,13 @@ jobs:
         grep "Yugabytedb" Formula/yugabytedb.rb
         grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
         grep "Yugabytedb" Formula/yugabytedb@2.0.rb
+    - name: "Push 2.1.2.0"
+      run: |
+        git add ${git_modified_files}
+        git config user.name 'YugaByte CI'
+        git config user.email 'yugabyte-ci@users.noreply.github.com'
+        git commit -m "Update version to 2.1.2.0"
+        git push -f origin ${{ github.ref }}:bot-branch
     - name: "Update the version to 3.0.0.0"
       run: |
         .ci/update_formula_version.sh '3.0.0.0' || true
@@ -57,6 +78,13 @@ jobs:
         grep "Yugabytedb" Formula/yugabytedb@2.1.rb
         grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
         grep "Yugabytedb" Formula/yugabytedb@2.0.rb
+    - name: "Push 3.0.0.0"
+      run: |
+        git add ${git_modified_files}
+        git config user.name 'YugaByte CI'
+        git config user.email 'yugabyte-ci@users.noreply.github.com'
+        git commit -m "Update version to 3.0.0.0"
+        git push -f origin ${{ github.ref }}:bot-branch
     # - name: "Update the version to a newer version"
     #   run: |
     #     .ci/update_formula_version.sh "${YB_VERSION}"
