@@ -17,9 +17,8 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: "Check the files from current directory"
-      run: "ls -lla"
     - name: "Update the version to 2.1.1.0"
+      id: update-1
       run: |
         .ci/update_formula_version.sh '2.1.1.0'
         git status
@@ -30,12 +29,13 @@ jobs:
         grep "Yugabytedb" Formula/yugabytedb@2.0.rb
     - name: "Push 2.1.1.0"
       run: |
-        git add ${git_modified_files}
+        git add ${{steps.update-1.outputs.git_modified_files}}
         git config user.name 'YugaByte CI'
         git config user.email 'yugabyte-ci@users.noreply.github.com'
         git commit -m "Update version to 2.1.1.0"
         git push -f origin ${{ github.ref }}:bot-branch
     - name: "Update the version to 2.0.11.0"
+      id: update-2
       run: |
         .ci/update_formula_version.sh '2.0.11.0'
         git status
@@ -46,12 +46,13 @@ jobs:
         grep "Yugabytedb" Formula/yugabytedb@2.0.rb
     - name: "Push 2.0.11.0"
       run: |
-        git add ${git_modified_files}
+        git add ${{steps.update-2.outputs.git_modified_files}}
         git config user.name 'YugaByte CI'
         git config user.email 'yugabyte-ci@users.noreply.github.com'
         git commit -m "Update version to 2.0.11.0"
         git push -f origin ${{ github.ref }}:bot-branch
     - name: "Update the version to 2.1.2.0"
+      id: update-3
       run: |
         .ci/update_formula_version.sh '2.1.2.0'
         git status
@@ -62,12 +63,13 @@ jobs:
         grep "Yugabytedb" Formula/yugabytedb@2.0.rb
     - name: "Push 2.1.2.0"
       run: |
-        git add ${git_modified_files}
+        git add ${{steps.update-3.outputs.git_modified_files}}
         git config user.name 'YugaByte CI'
         git config user.email 'yugabyte-ci@users.noreply.github.com'
         git commit -m "Update version to 2.1.2.0"
         git push -f origin ${{ github.ref }}:bot-branch
     - name: "Update the version to 3.0.0.0"
+      id: update-4
       run: |
         .ci/update_formula_version.sh '3.0.0.0' || true
         git status
@@ -80,7 +82,7 @@ jobs:
         grep "Yugabytedb" Formula/yugabytedb@2.0.rb
     - name: "Push 3.0.0.0"
       run: |
-        git add ${git_modified_files}
+        git add ${{steps.update-4.outputs.git_modified_files}}
         git config user.name 'YugaByte CI'
         git config user.email 'yugabyte-ci@users.noreply.github.com'
         git commit -m "Update version to 3.0.0.0"
