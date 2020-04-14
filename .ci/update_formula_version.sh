@@ -2,6 +2,15 @@
 
 set -o errexit -o pipefail
 
+export_modified_files() {
+  # TODO: modify this to set output instead of environment variable
+  echo "::set-env name=git_modified_files::${modified_files}"
+  echo "::set-output name=git_modified_files::${modified_files}"
+}
+
+trap export_modified_files EXIT
+
+
 info() {
   echo -e "\033[34m[INFO]\033[0m $@"
 }
@@ -39,6 +48,9 @@ update_formula() {
     --url "https://downloads.yugabyte.com/yugabyte-${version}-darwin.tar.gz" \
     "${formula}" || true
   # TODO: remove above true
+  modified_files="${modified_files} ${formula}"
+  # TODO: remove this echo
+  echo "modified_files: ${modified_files}"
 }
 
 # add_new_formula creates a versioned formula for old_version, updates
@@ -59,12 +71,20 @@ add_new_formula() {
       "s/^class Yugabytedb < Formula$/class YugabytedbAT${short_old_version//./} < Formula/g" \
       "${old_version_formula}"
 
+  modified_files="${modified_files} ${old_version_formula}"
+  # TODO: remove this echo
+  echo "modified_files: ${modified_files}"
+
   # Update the default formula with new_version
   update_formula "${default_formula_file}" "${new_version}"
   # Rename the Aliases to new_version
   info "add_new_formula: renaming the Aliases to '${new_version}'"
   mv "./Aliases/${formula_name}@${short_old_version}" \
      "./Aliases/${formula_name}@${new_version:0:3}"
+
+  modified_files="${modified_files} ./Aliases/${formula_name}@${short_old_version} ./Aliases/${formula_name}@${new_version:0:3}"
+  # TODO: remove this echo
+  echo "modified_files: ${modified_files}"
 }
 
 
@@ -79,6 +99,7 @@ formula_directory="$(pwd)/Formula"
 default_formula_file="${formula_directory}/${formula_name}.rb"
 current_default_version="$(grep -E "^[[:space:]]+url" "${default_formula_file}" | cut -d "-" -f 2)"
 versioned_formula_files="$(find -E "${formula_directory}" -regex ".*/${formula_name}@[0-9]+\.[0-9]+\.rb")"
+modified_files=""
 
 for formula in ${versioned_formula_files}; do
   version_from_file="$(grep -E "^[[:space:]]+url" ${formula} | cut -d "-" -f 2)"
