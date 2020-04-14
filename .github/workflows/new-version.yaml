@@ -12,20 +12,58 @@ on:
   #   - ".github/workflows/packages-*.yaml"
 jobs:
   update-version:
-    env:
-      YB_VERSION: "2.1.2.0"
+    # env:
+    #   YB_VERSION: "2.1.2.0"
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
     - name: "Check the files from current directory"
       run: "ls -lla"
-    - name: "Update the version to a newer version"
+    - name: "Update the version to 2.1.1.0"
       run: |
-        .ci/update_formula_version.sh "${YB_VERSION}"
-    - name: "Run git commands"
-      run: |
+        .ci/update_formula_version.sh '2.1.1.0'
         git status
         git diff
+        grep -E "^[[:space:]]+url" ./Formula/yugabytedb.rb
+        grep "Yugabytedb" Formula/yugabytedb.rb
+        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
+        grep "Yugabytedb" Formula/yugabytedb@2.0.rb
+    - name: "Update the version to 2.0.11.0"
+      run: |
+        .ci/update_formula_version.sh '2.0.11.0'
+        git status
+        git diff
+        grep -E "^[[:space:]]+url" ./Formula/yugabytedb.rb
+        grep "Yugabytedb" Formula/yugabytedb.rb
+        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
+        grep "Yugabytedb" Formula/yugabytedb@2.0.rb
+    - name: "Update the version to 2.1.2.0"
+      run: |
+        .ci/update_formula_version.sh '2.1.2.0'
+        git status
+        git diff
+        grep -E "^[[:space:]]+url" ./Formula/yugabytedb.rb
+        grep "Yugabytedb" Formula/yugabytedb.rb
+        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
+        grep "Yugabytedb" Formula/yugabytedb@2.0.rb
+    - name: "Update the version to 3.0.0.0"
+      run: |
+        .ci/update_formula_version.sh '3.0.0.0' || true
+        git status
+        git diff
+        grep -E "^[[:space:]]+url" ./Formula/yugabytedb.rb
+        grep "Yugabytedb" Formula/yugabytedb.rb
+        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.1.rb
+        grep "Yugabytedb" Formula/yugabytedb@2.1.rb
+        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
+        grep "Yugabytedb" Formula/yugabytedb@2.0.rb
+    # - name: "Update the version to a newer version"
+    #   run: |
+    #     .ci/update_formula_version.sh "${YB_VERSION}"
+    # - name: "Run git commands"
+    #   run: |
+    #     git status
+    #     git diff
         # git add -u
         # git config user.name 'Bhavin Gandhi'
         # git config user.email 'bhavin192@users.noreply.github.com'

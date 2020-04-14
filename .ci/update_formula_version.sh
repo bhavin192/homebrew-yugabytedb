@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
 set -o errexit -o pipefail
-set -x
 
 info() {
-  echo -e "\e[34m[INFO]\e[0m $@"
+  echo -e "\033[34m[INFO]\033[0m $@"
 }
 
 # version_eq compares major.minor of the given two versions. It
