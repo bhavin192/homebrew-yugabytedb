@@ -4,98 +4,59 @@ on:
     branches:
     - master
     - version-update
-    # paths:
-    # - ".github/workflows/packages-*.yaml"
-  # pull_request:
-  #   paths:
-  #   - "packages/**"
-  #   - ".github/workflows/packages-*.yaml"
+  repository_dispatch:
+    types:
+    - update-on-release
+  pull_request:
 jobs:
   update-version:
-    # env:
-    #   YB_VERSION: "2.1.2.0"
+    if: github.event_name == 'repository_dispatch'
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: "Update the version to 2.1.1.0"
-      id: update-1
+    - name: "Extract version number from tag"
+      id: extract-version
       run: |
-        .ci/update_formula_version.sh '2.1.1.0'
-        git status
-        git diff
-        grep -E "^[[:space:]]+url" ./Formula/yugabytedb.rb
-        grep "Yugabytedb" Formula/yugabytedb.rb
-        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
-        grep "Yugabytedb" Formula/yugabytedb@2.0.rb
-    - name: "Push 2.1.1.0"
+        tag_name="${{ github.event.client_payload.tag }}"
+        echo "Extracting version number from the tag '${tag_name}'."
+        version_number="${tag_name/v/}"
+        # Keep dots and count the string length
+        dot_count="$(res="${version_number//[^.]/}"; echo "${#res}")"
+        if [[ "${dot_count}" -eq 2 ]]; then
+          version_number="${version_number}.0"
+        fi
+        if [[ "$(res="${version_number//[^.]/}"; echo "${#res}")" -ne 3 ]]; then
+          echo "The tag '${tag_name}' is invalid" 1>&2
+          exit 1
+        fi
+        echo "Extracted the version number '${version_number}'."
+        echo "::set-output name=yb_version::${version_number}"
+    - name: "Update the version of yugabytedb Formula"
+      id: update-yb-formula
       run: |
-        git add ${{steps.update-1.outputs.git_modified_files}}
+        .ci/update_formula_version.sh '${{steps.extract-version.outputs.yb_version}}'
+    - name: "Run brew audit on changed Formula files"
+      id: run-audit
+      run: |
+        for file in ${{steps.update-yb-formula.outputs.modified_files}}; do
+          if [[ "${file}" =~ .*\/Formula\/yugabytedb(@[0-9]+\.[0-9]+)?\.rb ]]; then
+            brew audit --strict --online "${file}"
+          fi
+        done
+    - name: "Push the changes"
+      run: |
         git config user.name 'YugaByte CI'
         git config user.email 'yugabyte-ci@users.noreply.github.com'
-        git commit -m "Update version to 2.1.1.0"
+        git add ${{steps.update-yb-formula.outputs.modified_files}}
+        git commit -m "Update the version to ${{steps.extract-version.outputs.yb_version}}"
+        # TODO: update this before merging
         git push -f origin ${{ github.ref }}:bot-branch
-    - name: "Update the version to 2.0.11.0"
-      id: update-2
+    - name: "Push the changes to a branch"
+      if: steps.run-audit.conclusion == 'failure'
       run: |
-        .ci/update_formula_version.sh '2.0.11.0'
-        git status
-        git diff
-        grep -E "^[[:space:]]+url" ./Formula/yugabytedb.rb
-        grep "Yugabytedb" Formula/yugabytedb.rb
-        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
-        grep "Yugabytedb" Formula/yugabytedb@2.0.rb
-    - name: "Push 2.0.11.0"
-      run: |
-        git add ${{steps.update-2.outputs.git_modified_files}}
         git config user.name 'YugaByte CI'
         git config user.email 'yugabyte-ci@users.noreply.github.com'
-        git commit -m "Update version to 2.0.11.0"
-        git push -f origin ${{ github.ref }}:bot-branch
-    - name: "Update the version to 2.1.2.0"
-      id: update-3
-      run: |
-        .ci/update_formula_version.sh '2.1.2.0'
-        git status
-        git diff
-        grep -E "^[[:space:]]+url" ./Formula/yugabytedb.rb
-        grep "Yugabytedb" Formula/yugabytedb.rb
-        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
-        grep "Yugabytedb" Formula/yugabytedb@2.0.rb
-    - name: "Push 2.1.2.0"
-      run: |
-        git add ${{steps.update-3.outputs.git_modified_files}}
-        git config user.name 'YugaByte CI'
-        git config user.email 'yugabyte-ci@users.noreply.github.com'
-        git commit -m "Update version to 2.1.2.0"
-        git push -f origin ${{ github.ref }}:bot-branch
-    - name: "Update the version to 3.0.0.0"
-      id: update-4
-      run: |
-        .ci/update_formula_version.sh '3.0.0.0' || true
-        git status
-        git diff
-        grep -E "^[[:space:]]+url" ./Formula/yugabytedb.rb
-        grep "Yugabytedb" Formula/yugabytedb.rb
-        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.1.rb
-        grep "Yugabytedb" Formula/yugabytedb@2.1.rb
-        grep -E "^[[:space:]]+url" ./Formula/yugabytedb@2.0.rb
-        grep "Yugabytedb" Formula/yugabytedb@2.0.rb
-    - name: "Push 3.0.0.0"
-      run: |
-        git add ${{steps.update-4.outputs.git_modified_files}}
-        git config user.name 'YugaByte CI'
-        git config user.email 'yugabyte-ci@users.noreply.github.com'
-        git commit -m "Update version to 3.0.0.0"
-        git push -f origin ${{ github.ref }}:bot-branch
-    # - name: "Update the version to a newer version"
-    #   run: |
-    #     .ci/update_formula_version.sh "${YB_VERSION}"
-    # - name: "Run git commands"
-    #   run: |
-    #     git status
-    #     git diff
-        # git add -u
-        # git config user.name 'Bhavin Gandhi'
-        # git config user.email 'bhavin192@users.noreply.github.com'
-        # git commit -m "Update version to ${YB_VERSION}"
-        # git push origin ${{ github.ref }}:bot-branch
+        git add ${{steps.update-yb-formula.outputs.modified_files}}
+        git commit -m "Update the version to ${{steps.extract-version.outputs.yb_version}}"
+        # TODO: update this before merging: remove bot-branch
+        git push -f origin ${{ github.ref }}:bot-branch-update-${{steps.extract-version.outputs.yb_version}}

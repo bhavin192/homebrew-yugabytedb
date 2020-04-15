@@ -3,9 +3,7 @@
 set -o errexit -o pipefail
 
 export_modified_files() {
-  # TODO: modify this to set output instead of environment variable
-  echo "::set-env name=git_modified_files::${modified_files}"
-  echo "::set-output name=git_modified_files::${modified_files}"
+  echo "::set-output name=modified_files::${modified_files}"
 }
 
 trap export_modified_files EXIT
@@ -49,8 +47,6 @@ update_formula() {
     "${formula}" || true
   # TODO: remove above true
   modified_files="${modified_files} ${formula}"
-  # TODO: remove this echo
-  echo "modified_files: ${modified_files}"
 }
 
 # add_new_formula creates a versioned formula for old_version, updates
@@ -72,8 +68,6 @@ add_new_formula() {
       "${old_version_formula}"
 
   modified_files="${modified_files} ${old_version_formula}"
-  # TODO: remove this echo
-  echo "modified_files: ${modified_files}"
 
   # Update the default formula with new_version
   update_formula "${default_formula_file}" "${new_version}"
@@ -83,8 +77,6 @@ add_new_formula() {
      "./Aliases/${formula_name}@${new_version:0:3}"
 
   modified_files="${modified_files} ./Aliases/${formula_name}@${short_old_version} ./Aliases/${formula_name}@${new_version:0:3}"
-  # TODO: remove this echo
-  echo "modified_files: ${modified_files}"
 }
 
 
