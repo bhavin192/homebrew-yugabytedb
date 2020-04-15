@@ -10,7 +10,9 @@ on:
   pull_request:
 jobs:
   update-version:
+    # TODO: Check if it's a prerelease make it multi-line
     if: github.event_name == 'repository_dispatch'
+    #   && !github.event.client_payload.prerelease
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
@@ -35,8 +37,11 @@ jobs:
       id: update-yb-formula
       run: |
         .ci/update_formula_version.sh '${{steps.extract-version.outputs.yb_version}}'
+        git status
+        git diff
     - name: "Run brew audit on changed Formula files"
       id: run-audit
+      continue-on-error: true
       run: |
         for file in ${{steps.update-yb-formula.outputs.modified_files}}; do
           if [[ "${file}" =~ .*\/Formula\/yugabytedb(@[0-9]+\.[0-9]+)?\.rb ]]; then
@@ -44,6 +49,7 @@ jobs:
           fi
         done
     - name: "Push the changes"
+      if: steps.run-audit.outcome == 'success'
       run: |
         git config user.name 'YugaByte CI'
         git config user.email 'yugabyte-ci@users.noreply.github.com'
@@ -52,11 +58,18 @@ jobs:
         # TODO: update this before merging
         git push -f origin ${{ github.ref }}:bot-branch
     - name: "Push the changes to a branch"
-      if: steps.run-audit.conclusion == 'failure'
+      if: steps.run-audit.outcome == 'failure'
       run: |
+        git status
+        git diff
+        git branch
         git config user.name 'YugaByte CI'
         git config user.email 'yugabyte-ci@users.noreply.github.com'
         git add ${{steps.update-yb-formula.outputs.modified_files}}
         git commit -m "Update the version to ${{steps.extract-version.outputs.yb_version}}"
         # TODO: update this before merging: remove bot-branch
         git push -f origin ${{ github.ref }}:bot-branch-update-${{steps.extract-version.outputs.yb_version}}
+        echo "The run-audit step for new files has failed, please check the logs for more details" 1>&2
+        # TODO: add name and URL here
+        echo "The modified files are pushed to url and branch name here" 1>&2
+        exit 1
