@@ -44,8 +44,7 @@ update_formula() {
   info "update_formula: updating the formula '${formula}' to '${version}'"
   brew bump-formula-pr --dry-run --write \
     --url "https://downloads.yugabyte.com/yugabyte-${version}-darwin.tar.gz" \
-    "${formula}" || true
-  # TODO: remove above true
+    "${formula}"
   modified_files="${modified_files} ${formula}"
 }
 
@@ -64,7 +63,7 @@ add_new_formula() {
   cp "${default_formula_file}" "${old_version_formula}"
   # Update the class for old_version_formula
   sed -i "" \
-      "s/^class Yugabytedb < Formula$/class YugabytedbAT${short_old_version//./} < Formula/g" \
+      "s/^class ${formula_class} < Formula$/class ${formula_class}AT${short_old_version//./} < Formula/g" \
       "${old_version_formula}"
 
   modified_files="${modified_files} ${old_version_formula}"
@@ -87,6 +86,7 @@ fi
 
 latest_version="$1"
 formula_name="yugabytedb"
+formula_class="Yugabytedb"
 formula_directory="$(pwd)/Formula"
 default_formula_file="${formula_directory}/${formula_name}.rb"
 current_default_version="$(grep -E "^[[:space:]]+url" "${default_formula_file}" | cut -d "-" -f 2)"
