@@ -1,11 +1,13 @@
 class YugabytedbAT20 < Formula
   desc "High-performance distributed SQL database Yugabyte DB"
   homepage "https://yugabyte.com"
-  url "https://downloads.yugabyte.com/yugabyte-2.0.9.0-darwin.tar.gz"
+  url "https://downloads.yugabyte.com/yugabyte-2.0.11.0-darwin.tar.gz"
   sha256 "39acba6800f9d4c665ed44323502cbb650d25430716cd0ecef7135b482d2ce7d"
 
   depends_on :java => "1.8"
   depends_on "python"
+
+  keg_only :versioned_formula
 
   def install
     libexec.install Dir["*"]
@@ -15,11 +17,12 @@ class YugabytedbAT20 < Formula
   end
 
   def post_install
-    (var/"yugabyte_data").mkpath
+    (var/"#{name}_data").mkpath
     (prefix/"logs").mkpath
-    (var/"log/yugabyte").mkpath
-    if !(File.exist?((etc/"yugabyted.conf"))) then
-      (etc/"yugabyted.conf").write yugabyte_conf
+    (var/"log/#{name}").mkpath
+    (etc/"#{name}").mkpath
+    if !(File.exist?((etc/"#{name}/yugabyted.conf"))) then
+      (etc/"#{name}/yugabyted.conf").write yugabyte_conf
     end
   end
 
@@ -31,9 +34,9 @@ class YugabytedbAT20 < Formula
     "master_webserver_port": 7000, 
     "bind_ip": "127.0.0.1", 
     "ycql_port": 9042, 
-    "data_dir": "#{var}/yugabyte_data", 
+    "data_dir": "#{var}/#{name}_data", 
     "ysql_port": 5433, 
-    "log_dir": "#{var}/log/yugabyte", 
+    "log_dir": "#{var}/log/#{name}", 
     "polling_interval": "5", 
     "tserver_rpc_port": 9100
     }
@@ -49,7 +52,7 @@ class YugabytedbAT20 < Formula
   end
 
   plist_options :startup => true
-  plist_options :manual => "yugabyted start --config #{HOMEBREW_PREFIX}/etc/yugabyted.conf"
+  plist_options :manual => "yugabyted start --config #{HOMEBREW_PREFIX}/etc/yugabytedb@2.0/yugabyted.conf"
 
   def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
@@ -63,7 +66,7 @@ class YugabytedbAT20 < Formula
         <string>#{bin}/yugabyted</string>
         <string>start</string>
         <string>--config</string>
-        <string>#{etc}/yugabyted.conf</string>
+        <string>#{etc}/#{name}/yugabyted.conf</string>
         <string>--daemon</string>
         <string>false</string>
       </array>
@@ -77,9 +80,9 @@ class YugabytedbAT20 < Formula
       <key>WorkingDirectory</key>
       <string>#{HOMEBREW_PREFIX}</string>
       <key>StandardErrorPath</key>
-      <string>#{var}/log/yugabyte/yugabyted-service.log</string>
+      <string>#{var}/log/#{name}/yugabyted-service.log</string>
       <key>StandardOutPath</key>
-      <string>#{var}/log/yugabyte/yugabyted-service.log</string>
+      <string>#{var}/log/#{name}/yugabyted-service.log</string>
       <key>HardResourceLimits</key>
       <dict>
         <key>NumberOfFiles</key>
@@ -96,6 +99,6 @@ class YugabytedbAT20 < Formula
   end
 
   test do
-    system "#{libexec}/bin/yugabyted", "version", "--config", "#{HOMEBREW_PREFIX}/etc/yugabyted.conf"
+    system "#{libexec}/bin/yugabyted", "version", "--config", "#{HOMEBREW_PREFIX}/etc/#{name}/yugabyted.conf"
   end
 end
