@@ -15,10 +15,11 @@ class Yugabytedb < Formula
   end
 
   def post_install
-    (var/"yugabyte_data").mkpath
+    (var/"#{name}_data").mkpath
     (prefix/"logs").mkpath
-    (var/"log/yugabyte").mkpath
-    yugabyted_conf_file = etc/"yugabyted.conf"
+    (var/"log/#{name}").mkpath
+    (etc/"#{name}").mkpath
+    yugabyted_conf_file = etc/"#{name}/yugabyted.conf"
     yugabyted_conf_file.write yugabyte_conf unless yugabyted_conf_file.exist?
   end
 
@@ -31,9 +32,9 @@ class Yugabytedb < Formula
         "master_webserver_port": 7000,
         "bind_ip": "127.0.0.1",
         "ycql_port": 9042,
-        "data_dir": "#{var}/yugabyte_data",
+        "data_dir": "#{var}/#{name}_data",
         "ysql_port": 5433,
-        "log_dir": "#{var}/log/yugabyte",
+        "log_dir": "#{var}/log/#{name}",
         "polling_interval": "5",
         "tserver_rpc_port": 9100
       }
@@ -50,7 +51,7 @@ class Yugabytedb < Formula
   end
 
   plist_options :startup => true
-  plist_options :manual => "yugabyted start --config #{HOMEBREW_PREFIX}/etc/yugabyted.conf"
+  plist_options :manual => "yugabyted start --config #{HOMEBREW_PREFIX}/etc/yugabytedb/yugabyted.conf"
 
   def plist
     <<~EOS
@@ -62,10 +63,10 @@ class Yugabytedb < Formula
         <string>#{plist_name}</string>
         <key>ProgramArguments</key>
         <array>
-          <string>#{bin}/yugabyted</string>
+          <string>#{opt_bin}/yugabyted</string>
           <string>start</string>
           <string>--config</string>
-          <string>#{etc}/yugabyted.conf</string>
+          <string>#{etc}/#{name}/yugabyted.conf</string>
           <string>--daemon</string>
           <string>false</string>
         </array>
@@ -79,9 +80,9 @@ class Yugabytedb < Formula
         <key>WorkingDirectory</key>
         <string>#{HOMEBREW_PREFIX}</string>
         <key>StandardErrorPath</key>
-        <string>#{var}/log/yugabyte/yugabyted-service.log</string>
+        <string>#{var}/log/#{name}/yugabyted-service.log</string>
         <key>StandardOutPath</key>
-        <string>#{var}/log/yugabyte/yugabyted-service.log</string>
+        <string>#{var}/log/#{name}/yugabyted-service.log</string>
         <key>HardResourceLimits</key>
         <dict>
           <key>NumberOfFiles</key>
@@ -98,6 +99,6 @@ class Yugabytedb < Formula
   end
 
   test do
-    system "#{libexec}/bin/yugabyted", "version", "--config", "#{HOMEBREW_PREFIX}/etc/yugabyted.conf"
+    system "#{libexec}/bin/yugabyted", "version", "--config", "#{HOMEBREW_PREFIX}/etc/#{name}/yugabyted.conf"
   end
 end
