@@ -1,12 +1,13 @@
-class Yugabytedb < Formula
+class YugabytedbAT20 < Formula
   desc "High-performance distributed SQL database Yugabyte DB"
   homepage "https://yugabyte.com"
-  url "https://downloads.yugabyte.com/yugabyte-2.1.0.0-darwin.tar.gz"
+  url "https://downloads.yugabyte.com/yugabyte-2.0.11.0-darwin.tar.gz"
   sha256 "cb451a47cc8a3804ed0152f4471b4c3626593da7b401d7bfbd843805beaa10f9"
 
   depends_on :java => "1.8"
   depends_on "python"
 
+  keg_only: versioned_formula
   def install
     libexec.install Dir["*"]
     bin.install_symlink libexec/"bin/yugabyted"
@@ -51,7 +52,7 @@ class Yugabytedb < Formula
   end
 
   plist_options :startup => true
-  plist_options :manual => "yugabyted start --config #{HOMEBREW_PREFIX}/etc/yugabytedb/yugabyted.conf"
+  plist_options :manual => "yugabyted start --config #{HOMEBREW_PREFIX}/etc/yugabytedb@2.0/yugabyted.conf"
 
   def plist
     <<~EOS
