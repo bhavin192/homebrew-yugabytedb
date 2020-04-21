@@ -66,6 +66,19 @@ add_new_formula() {
       "s/^class ${formula_class} < Formula$/class ${formula_class}AT${short_old_version//./} < Formula/g" \
       "${old_version_formula}"
 
+  # Append keg_only: versioned_formula to old_version_formula
+  sed -i "" '/^  depends_on "python"$/a\
+  \
+  \ \ keg_only: versioned_formula' "${old_version_formula}"
+
+  # Change path from plist_options
+  # sed: select the address range i.e. the line containing
+  # plist_options :manual and then replace '/yugabytedb/' string from
+  # that line https://unix.stackexchange.com/a/315082
+  sed -i "" \
+      "/^  plist_options :manual .*$/ s/\/${formula_name}\//\/${formula_name}@${short_old_version}\//g" \
+      "${old_version_formula}"
+
   modified_files="${modified_files} ${old_version_formula}"
 
   # Update the default formula with new_version
