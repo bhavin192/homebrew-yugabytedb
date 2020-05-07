@@ -19,7 +19,7 @@ info() {
 # argument 1: version1: a version string of the form x.y.z.w
 # argument 2: version2: a version string of the form x.y.z.w
 version_eq() {
-  test "${1:0:3}" == "${2:0:3}"
+  test "${1%.*.*}" == "${2%.*.*}"
 }
 
 # version_gt compares major.minor of the given two versions. It
@@ -28,8 +28,8 @@ version_eq() {
 # argument 1: version1: a version string of the form x.y.z.w
 # argument 2: version2: a version string of the form x.y.z.w
 version_gt() {
-  version1="${1:0:3}"
-  version2="${2:0:3}"
+  version1="${1%.*.*}"
+  version2="${2%.*.*}"
   test "$(echo -e "${version1}\n${version2}" | sort -V | head -n 1)" != "${version1}"
 }
 
@@ -55,7 +55,7 @@ update_formula() {
 add_new_formula() {
   new_version="$1"
   old_version="$2"
-  short_old_version="${old_version:0:3}"
+  short_old_version="${old_version%.*.*}"
   old_version_formula="${formula_directory}/${formula_name}@${short_old_version}.rb"
 
   # Create a versioned formula for old_version
@@ -79,9 +79,9 @@ add_new_formula() {
   # Rename the Aliases to new_version
   info "add_new_formula: renaming the Aliases to '${new_version}'"
   mv "./Aliases/${formula_name}@${short_old_version}" \
-     "./Aliases/${formula_name}@${new_version:0:3}"
+     "./Aliases/${formula_name}@${new_version%.*.*}"
 
-  modified_files="${modified_files} ./Aliases/${formula_name}@${short_old_version} ./Aliases/${formula_name}@${new_version:0:3}"
+  modified_files="${modified_files} ./Aliases/${formula_name}@${short_old_version} ./Aliases/${formula_name}@${new_version%.*.*}"
 }
 
 
@@ -119,7 +119,7 @@ fi
 # Change in z or w for old versioned formula files
 for version in ${list_of_versions}; do
   if version_eq "${latest_version}" "${version}"; then
-    update_formula "${formula_directory}/${formula_name}@${version:0:3}.rb" \
+    update_formula "${formula_directory}/${formula_name}@${version%.*.*}.rb" \
                    "${latest_version}"
     exit 0
   fi
