@@ -36,15 +36,15 @@ jobs:
         .ci/update_formula_version.sh '${{steps.extract-version.outputs.yb_version}}'
     - name: "Run brew audit on changed formula files"
       id: run-audit
-      continue-on-error: true
       run: |
+        echo "Fake failure here" 1>&2
+        exit 1
         for file in ${{steps.update-yb-formula.outputs.modified_files}}; do
           if [[ "${file}" =~ .*\/Formula\/yugabytedb(@[0-9]+\.[0-9]+)?\.rb ]]; then
             brew audit --strict --online "${file}"
           fi
         done
     - name: "Push the changes"
-      if: steps.run-audit.outcome == 'success'
       run: |
         git status
         git diff
@@ -52,7 +52,7 @@ jobs:
         git commit -m "Update the version to ${{steps.extract-version.outputs.yb_version}}"
         git push --force origin bot-branch # ${{ github.ref }}
     - name: "Push the changes to a branch"
-      if: steps.run-audit.outcome == 'failure'
+      if: failure() && steps.run-audit.outcome == 'failure'
       run: |
         git status
         git diff
