@@ -1,0 +1,21 @@
+name: "Test Formula installation"
+on:
+  push:
+    branches:
+    - java-fix
+jobs:
+  install-formula:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: "Add yugabytedb tap and checkout development branch"
+      run: |
+        brew tap yugabyte/yugabytedb
+        cd $(brew --repository yugabyte/yugabytedb)
+        git remote add bhavin192 https://github.com/bhavin192/homebrew-yugabytedb.git
+        git checkout -b java-fix bhavin192/java-fix
+        brew install --build-from-source yugabyte/yugabytedb/yugabytedb-client
+        which ysqlsh || true
+        which ycqlsh || true
+        which cqlsh || true
+        
