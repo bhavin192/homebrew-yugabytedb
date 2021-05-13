@@ -19,7 +19,7 @@ jobs:
         gtimeout 10m yugabyted start --config /usr/local/etc/yugabyte.conf
         curl http://localhost:7200 || true
         curl http://localhost:9000 || true
-        ysqlsh -c "CREATE TABLE test1(id int primary key); INSERT INTO test1 SELECT * FROM generate_series(1,10); SELECT * FROM test1;"
+        ysqlsh -h localhost -c "CREATE TABLE test1(id int primary key); INSERT INTO test1 SELECT * FROM generate_series(1,10); SELECT * FROM test1;"
         gtimeout 5m yugabyted demo connect
         
 
