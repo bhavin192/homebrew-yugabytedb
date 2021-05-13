@@ -17,4 +17,8 @@ jobs:
         which ycqlsh || true
         which cqlsh || true
         gtimeout 10m yugabyted start --config /usr/local/etc/yugabyte.conf
+        curl http://localhost:7200 || true
+        curl http://localhost:9000 || true
+        gtimeout 5m yugabyted demo
+        
 
