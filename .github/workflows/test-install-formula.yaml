@@ -10,10 +10,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: "Add yugabytedb tap and checkout development branch"
       run: |
+        brew install coreutils
         brew tap yugabyte/yugabytedb file://$(pwd)
         brew install --build-from-source yugabyte/yugabytedb/yugabytedb
         which ysqlsh || true
         which ycqlsh || true
         which cqlsh || true
-        timeout 10m yugabyted start --config /usr/local/etc/yugabyte.conf
+        gtimeout 10m yugabyted start --config /usr/local/etc/yugabyte.conf
 
